@@ -7,15 +7,16 @@
 
 </template>
 
-<script setup>
-import tableQuiz from "/src/components/tableQuiz.vue"
+<script setup lang="ts">
+import tableQuiz from "../components/tableQuiz.vue"
+import type { quizlist } from "../types/config"
 import { ref, onMounted } from 'vue';
 
 
 
-let quizList = ref([])
+let quizList = ref<quizlist[]>([])
 
-const deleteQuiz = (index) => {
+const deleteQuiz = (index: number) => {
     quizList.value.splice(index, 1)
 }
 
@@ -42,7 +43,4 @@ onMounted(() => {
     listQuiz()
 })
 
-
 </script>
-
-<style></style>

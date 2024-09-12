@@ -19,10 +19,11 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import { useStore } from 'vuex'
 import { ref, computed } from 'vue';
 import { useRouter } from "vue-router";
+import {Token} from "../types/config";
 
 const store = useStore()
 const router = useRouter()
@@ -31,12 +32,12 @@ const email = ref('admin@admin.com')
 const emailValid = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
 const password = ref('admin')
 
-const erreurs = ref([])
+const erreurs = ref<string[]>([])
 
 
 
 
-const verify = (event) => {
+const verify = (event: any) => {
 
   event.preventDefault()
   erreurs.value = []
@@ -60,7 +61,7 @@ const verify = (event) => {
 
 
 
-const setTokenStore = (token) => {
+const setTokenStore = (token: Token) => {
   if (token && token.token) {
     try {
       const user = JSON.parse(atob(token.token.split('.')[1]))
@@ -99,8 +100,6 @@ const login = async () => {
       },
     });
 
-    
-    
 
     if (!response.ok) {
       console.error('Erreur lors de la connexion:', response.statusText);

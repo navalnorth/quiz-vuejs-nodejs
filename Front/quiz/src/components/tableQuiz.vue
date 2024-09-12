@@ -11,16 +11,10 @@
 
 </template>
 
-<script setup>
-import { defineProps, defineEmits, ref } from "vue";
+<script setup lang="ts">
 import { useRouter } from "vue-router";
 
-
 const router = useRouter()
-const modifierQuiz = () => {
-    router.push('/creationQuiz')
-}
-
 
 const props = defineProps({
     title: String,
@@ -28,33 +22,33 @@ const props = defineProps({
     id: Number
 })
 
-
 const emit = defineEmits([
-    'delete'
+    'delete',
+    'update'
 ])
 const emitDelete = () => {
     emit('delete');
 }
 
 
+
+const modifierQuiz = async () => {
+    router.push(`/updateQuiz/${props.id}`)
+}
+
 const deleteQuiz = async () => {
     try {
         const response = await fetch(`http://localhost:3000/api/quiz/delete/${props.id}`, {
             method: 'DELETE',
-        });
+        })
 
-        if (response.ok) {
-            emitDelete()
-        } 
-    } catch (error) {
-        console.error('Erreur pour supprimer le quiz:', error);
-    }
+        if (response.ok) 
+            { emitDelete() } 
+    } catch (error) 
+        { console.error('Erreur pour supprimer le quiz:', error) }
 }
 
 
 
 </script>
 
-
-<style scoped>
-</style>
