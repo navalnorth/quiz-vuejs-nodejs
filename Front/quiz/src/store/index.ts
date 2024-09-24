@@ -1,26 +1,35 @@
 import { createStore } from 'vuex'
+import type { User } from "../types/config"
 
 export default createStore({
   state: {
-    token: null,
-    user: null,
+    token: null as string | null,
+    user: null as User | null,
   },
   getters: {
+    estAuthentifie(state) {
+      return !!state.token;
+    },
+    estAdmin(state) {
+      return state.user && state.user.role === 'admin';
+    },
+    estUser(state) {
+      return state.user && state.user.role === 'user';
+    }
   },
   mutations: {
-    setToken (state, token) {
-      state.token = token
+    setToken (state, token: string) {
+      state.token = token;
     },
-    setUser (state, user) {
-      state.user = user
+    setUser (state, user: User) {
+      state.user = user;
     },
-    createToken ( state , token) {
-      localStorage.setItem('token', token)
+    createToken (state, token: string) {
+      localStorage.setItem('token', token);
     }
   },
   actions: {
-    
   },
   modules: {
   }
-})
+});

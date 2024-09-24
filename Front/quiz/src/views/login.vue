@@ -28,9 +28,9 @@ import {Token} from "../types/config";
 const store = useStore()
 const router = useRouter()
 
-const email = ref('admin@admin.com')
+const email = ref('user@user.com')
 const emailValid = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-const password = ref('admin')
+const password = ref('user')
 
 const erreurs = ref<string[]>([])
 

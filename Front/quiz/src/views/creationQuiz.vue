@@ -9,7 +9,7 @@
             </div>
             <div>
                 <input class="px-5 py-2.5 rounded-3xl ring-1 ring-cyan-700 m-2 w-96" placeholder="Nom de la question"
-                    v-model="currentQuestion.nom_question" :id="'question-' + QuestionIndex" />
+                    v-model="currentQuestion.nom_question"/>
             </div>
 
             <div class="flex flex-col justify-center items-center my-4">
@@ -64,6 +64,7 @@ const erreurs = ref<string[]>([]);
 
 const monQuiz = ref<Quiz>({
     nom_quiz: '',
+    isActive: false,
     questions: [
         {
             nom_question: '',
@@ -159,12 +160,11 @@ const clique = async () => {
 
 
 const CreationQuiz = async () => {
-
     try {
         const formatedQuestion = monQuiz.value.questions.map((q) => ({
             nom_question: q.nom_question,
             reponses: q.reponses,
-            reponse_correcte: q.reponses[q.reponse_correcte]
+            reponse_correcte: q.reponse_correcte
         }))
         const response = await fetch('http://localhost:3000/api/quiz/creationQuiz', {
             method: 'POST',

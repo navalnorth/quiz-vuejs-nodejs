@@ -24,8 +24,7 @@
                     class="flex items-center mt-4 flex-col">
                     <input class="px-5 py-2.5 rounded-3xl ring-1 ring-cyan-700 mb-2 w-96"
                         placeholder="Ecrivez votre réponse" v-model="currentQuestion.reponses[index]" />
-                    <input type="radio" v-model="currentQuestion.reponse_correcte" :value="index"
-                        :name="'correct' + QuestionIndex" />
+                    <input type="radio" v-model="currentQuestion.reponse_correcte" :value="index" v-bind:checked="isRadioChecked(reponse)"/>
                 </div>
             </div>
             <div class="w-full flex justify-between px-10">
@@ -68,6 +67,7 @@ const erreurs = ref<string[]>([]);
 
 const monQuiz = ref<Quiz>({
     nom_quiz: '',
+    isActive: false,
     questions: [
         {
             nom_question: '',
@@ -85,6 +85,11 @@ const currentQuestion = computed(() => monQuiz.value.questions[QuestionIndex.val
 const isLastQuestion = computed(() => QuestionIndex.value === monQuiz.value.questions.length - 1);
 
 
+const isRadioChecked = (r: any) => {
+    if ( r === currentQuestion.value.reponse_correcte) {
+        return true
+    }
+}
 
 const suivant = () => {
     erreurs.value = []
@@ -97,6 +102,8 @@ const suivant = () => {
 }
 
 const precedent = () => {
+    erreurs.value = []
+    if (!validerQuestion()) return
     if (QuestionIndex.value > 0) {
         QuestionIndex.value--;
     }
@@ -105,11 +112,13 @@ const precedent = () => {
 
 
 const addQuestion = () => {
+    erreurs.value = []
+    if (!validerQuestion()) return
     monQuiz.value.questions.push({
         nom_question: '',
         reponses: ['', ''],
         reponse_correcte: 0
-    });
+    })
 }
 
 
@@ -137,7 +146,7 @@ const validerQuestion = () => {
         return false;
     }
 
-    if (reponse_correcte === null || reponse_correcte ===  undefined) {
+    if (reponse_correcte === null || undefined) {
         erreurs.value.push('Une réponse correcte doit être sélectionnée.');
         return false;
     }
@@ -152,19 +161,17 @@ const clique = async () => {
 
     if (!validerQuestion()) return
 
-    await modifierQuiz();
-
-    monQuiz.value.nom_quiz = '';
-    monQuiz.value.questions = [{ nom_question: '', reponses: ['', ''], reponse_correcte: 0 }];
-    QuestionIndex.value = 0;
+    await modifierQuiz()
 }
+
+
 
 const modifierQuiz = async () => {
     try {
         const formatedQuestion = monQuiz.value.questions.map((q) => ({
             nom_question: q.nom_question,
             reponses: q.reponses,
-            reponse_correcte: q.reponses[q.reponse_correcte]
+            reponse_correcte: q.reponse_correcte
         }))
         const response = await fetch(`http://localhost:3000/api/quiz/updateQuiz/${route.params.id_quiz}`, {
             method: 'PUT',
@@ -196,6 +203,8 @@ const fetchQuiz = async () => {
         }
         const data = await response.json()
         monQuiz.value = data
+        
+        
     } catch (error) {
         console.error('Erreur durant la récupération du quiz:', error);
     }
