@@ -1,6 +1,6 @@
 <template>
-    <div class="w-full m-8">
-        <h2 class="text-4xl m-4 flex justify-center">Modification de votre Quiz</h2>
+    <div class="w-full">
+        <h2 class="text-4xl m-2 flex justify-center">Modification de votre Quiz</h2>
 
         <form @submit.prevent="clique" class="flex flex-col justify-center items-center">
             <div>
@@ -13,18 +13,16 @@
             </div>
 
             <div class="flex flex-col justify-center items-center my-4">
-                <label>Vos réponses</label>
-
                 <button @click.prevent="reponsePlus"
-                    class="px-5 py-2.5 bg-green-700 text-white border-none rounded-3xl hover:bg-green-950 w-32 m-4">
+                    class="px-5 py-2.5 bg-green-700 text-white border-none rounded-3xl hover:bg-green-950 w-32 m-2">
                     Ajouter
                 </button>
 
                 <div v-for="(reponse, index) in currentQuestion.reponses" :key="index"
-                    class="flex items-center mt-4 flex-col">
+                    class="flex items-center mt-2 flex-col">
                     <input class="px-5 py-2.5 rounded-3xl ring-1 ring-cyan-700 mb-2 w-96"
                         placeholder="Ecrivez votre réponse" v-model="currentQuestion.reponses[index]" />
-                    <input type="radio" v-model="currentQuestion.reponse_correcte" :value="index" v-bind:checked="isRadioChecked(reponse)"/>
+                    <input type="radio" v-model="currentQuestion.reponse_correcte" :value="index" v-bind:checked="isRadioChecked(index)"/>
                 </div>
             </div>
             <div class="w-full flex justify-between px-10">
@@ -58,7 +56,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { Quiz } from "../types/config";
+import type { formatedQeustion } from "../types/config";
 import { useRoute, useRouter } from "vue-router";
+import { jwtDecode } from 'jwt-decode';
 
 const route = useRoute()
 const router = useRouter()
@@ -71,7 +71,7 @@ const monQuiz = ref<Quiz>({
     questions: [
         {
             nom_question: '',
-            reponses: ['', ''],
+            reponses: ['', '', '', ''],
             reponse_correcte: 0,
         }
     ]
@@ -86,7 +86,7 @@ const isLastQuestion = computed(() => QuestionIndex.value === monQuiz.value.ques
 
 
 const isRadioChecked = (r: any) => {
-    if ( r === currentQuestion.value.reponse_correcte) {
+    if ( r == currentQuestion.value.reponse_correcte) {
         return true
     }
 }
@@ -101,6 +101,9 @@ const suivant = () => {
     QuestionIndex.value++;
 }
 
+
+
+
 const precedent = () => {
     erreurs.value = []
     if (!validerQuestion()) return
@@ -112,13 +115,14 @@ const precedent = () => {
 
 
 const addQuestion = () => {
-    erreurs.value = []
-    if (!validerQuestion()) return
+    erreurs.value = [];
+    if (!validerQuestion()) return;
     monQuiz.value.questions.push({
         nom_question: '',
-        reponses: ['', ''],
+        reponses: ['', '', '', ''],
         reponse_correcte: 0
-    })
+    });
+
 }
 
 
@@ -158,9 +162,7 @@ const validerQuestion = () => {
 
 const clique = async () => {
     erreurs.value = []
-
     if (!validerQuestion()) return
-
     await modifierQuiz()
 }
 
@@ -168,7 +170,7 @@ const clique = async () => {
 
 const modifierQuiz = async () => {
     try {
-        const formatedQuestion = monQuiz.value.questions.map((q) => ({
+        const formatedQuestion: formatedQeustion[] = monQuiz.value.questions.map((q) => ({
             nom_question: q.nom_question,
             reponses: q.reponses,
             reponse_correcte: q.reponse_correcte
@@ -196,19 +198,37 @@ const modifierQuiz = async () => {
 
 const fetchQuiz = async () => {
     try {
-        const response = await fetch(`http://localhost:3000/api/quiz/updateQuiz/${route.params.id_quiz}`)
+        const response = await fetch(`http://localhost:3000/api/quiz/updateQuiz/${route.params.id_quiz}`, {
+            method: 'GET',
+        });
         if (!response.ok) {
-            console.error('Erreur lors de la récuperation du quiz:')
-            return
+            console.error('Erreur lors de la récupération du quiz:');
+            return;
         }
-        const data = await response.json()
-        monQuiz.value = data
+        const data = await response.json();
+        console.log(data);
         
-        
+        if (!data.quiz) {
+            console.error('Aucun quiz trouvé !');
+            return;
+        }
+
+        try {
+            const quiz: any = jwtDecode(data.quiz);
+            if (!quiz || !quiz.quiz) {
+                console.error('Le décodage du quiz a échoué ou le quiz est manquant.');
+                return;
+            }
+            monQuiz.value = quiz.quiz;
+        } catch (decodeError) {
+            console.error('Erreur lors du décodage du JWT:', decodeError);
+        }
+
     } catch (error) {
         console.error('Erreur durant la récupération du quiz:', error);
     }
 }
+
 
 
 onMounted(() => {

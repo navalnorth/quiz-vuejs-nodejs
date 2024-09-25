@@ -49,10 +49,11 @@ import { useRoute } from "vue-router";
 import Progress from "../components/progress.vue";
 import reponseUser from "../components/reponseUser.vue";
 import Recap from '@/components/recap.vue';
+import { jwtDecode } from 'jwt-decode';
 
 const route = useRoute();
 const QuestionIndex = ref<number>(0)
-const selectionReponse = ref<number | null>(null);
+const selectionReponse = ref<number | null | any>(null);
 const state = ref('reponses')
 const currentScore = ref(0)
 
@@ -103,14 +104,36 @@ const suivant = () => {
 
 const fetchQuiz = async () => {
     try {
-        const response = await fetch(`http://localhost:3000/api/quiz/updateQuiz/${route.params.id_quiz}`)
-        if (!response.ok) throw new Error('Erreur lors de la récupération du quiz')
-        const data = await response.json()
-        monQuiz.value = data
+        const response = await fetch(`http://localhost:3000/api/quiz/updateQuiz/${route.params.id_quiz}`, {
+            method: 'GET',
+        });
+        if (!response.ok) {
+            console.error('Erreur lors de la récupération du quiz:');
+            return;
+        }
+        const data = await response.json();
+        
+        if (!data.quiz) {
+            console.error('Aucun quiz trouvé !');
+            return;
+        }
+
+        try {
+            const quiz: any = jwtDecode(data.quiz);
+            if (!quiz || !quiz.quiz) {
+                console.error('Le décodage du quiz a échoué ou le quiz est manquant.');
+                return;
+            }
+            monQuiz.value = quiz.quiz;
+        } catch (decodeError) {
+            console.error('Erreur lors du décodage du JWT:', decodeError);
+        }
+
     } catch (error) {
-        console.error('Erreur durant la récupération du quiz:', error)
+        console.error('Erreur durant la récupération du quiz:', error);
     }
 }
+
 
 onMounted(() => {
     fetchQuiz()

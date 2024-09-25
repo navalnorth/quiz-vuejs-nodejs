@@ -1,10 +1,10 @@
 <template>
-<div class="my-4">
+<div class="m-2 p-5 bg-cyan-300 rounded-3xl">
     <div class="flex flex-col text-center">
         <p>{{ title }}</p>
     </div>
 
-    <div class="mx-4 my-2 flex items-center justify-center items-align">
+    <div class="mx-4 my-2 flex items-center justify-center">
 
         <button class="px-5 py-2.5 bg-cyan-700 text-white border-none rounded-3xl hover:bg-cyan-950 mx-2"
             @click="modifierQuiz">Modifier</button>

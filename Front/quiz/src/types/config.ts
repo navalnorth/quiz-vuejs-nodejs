@@ -26,6 +26,12 @@ export interface listQuizActive {
   nom_quiz: string;
 }
 
+export interface formatedQeustion {
+  nom_question: string;
+  reponses: string[];
+  reponse_correcte: number;
+}
+
 export interface User {
   id: number;
   name: string;

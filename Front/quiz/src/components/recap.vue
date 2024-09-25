@@ -44,8 +44,8 @@ const scoreMinimum = computed(() => props.questions * 0.5)
 
 const hasWon = computed(() => props.score >= scoreMinimum.value )
 
-const succes = 'Féliciation ! Vous êtes cultivé'
-const echec = 'Dommage ! Revenez plus instruit :('
+const succes = 'Féliciations ! Vous êtes cultivé/e'
+const echec = 'Dommage ! Revenez plus instruit/e :('
 
 onMounted(() => {
     if (hasWon.value)

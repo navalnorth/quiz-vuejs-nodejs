@@ -23,19 +23,19 @@ const routes: Array<RouteRecordRaw> = [
     path: '/profileAdmin',
     name: 'profileAdmin',
     component: profileAdmin,
-    meta: { requiresAdmin: true }
+    meta: { requiresAuth: true, requiresAdmin: true  }
   },
   {
     path: '/creationQuiz',
     name: 'creationQuiz',
     component: creationQuiz,
-    meta: { requiresAdmin: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/updateQuiz/:id_quiz',
     name: 'updateQuiz',
     component: updateQuiz,
-    meta: { requiresAdmin: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/profileUser',
@@ -60,21 +60,23 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const store = useStore()
+  const store = useStore();
+  const isLoggedIn = store.getters.isLoggedIn;
+  const isAdmin = store.getters.isAdmin;
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters.estAuthentifie) {
-      return next({ name: 'login' });
+  if (['/', '/register', '/'].includes(to.path)) {
+    next(); 
+  } else if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isLoggedIn) {
+      next('/');
+    } else if (to.matched.some(record => record.meta.requiresAdmin) && !isAdmin) {
+      next('/'); 
+    } else {
+      next();
     }
+  } else {
+    next();
   }
-
-  if (to.matched.some(record => record.meta.requiresAdmin)) {
-    if (!store.getters.estAdmin) {
-      return next({ name: 'login' });
-    }
-  }
-
-  next();
 })
 
 

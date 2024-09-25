@@ -9,9 +9,15 @@
 </template>
 
 <script setup lang="ts">
+import { useStore } from "vuex";
 import Logo from "./components/Logo.vue"
+import { onMounted } from "vue";
 
+const store = useStore()
 
+onMounted(() => {
+  store.dispatch('checkAuth')
+})
 
 
 </script>

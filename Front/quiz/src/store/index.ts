@@ -1,35 +1,62 @@
-import { createStore } from 'vuex'
-import type { User } from "../types/config"
+import { createStore } from 'vuex';
 
 export default createStore({
   state: {
-    token: null as string | null,
-    user: null as User | null,
-  },
-  getters: {
-    estAuthentifie(state) {
-      return !!state.token;
-    },
-    estAdmin(state) {
-      return state.user && state.user.role === 'admin';
-    },
-    estUser(state) {
-      return state.user && state.user.role === 'user';
-    }
+    user: null,
+    token: localStorage.getItem('token') || null,
+    role: localStorage.getItem('role') || null,
   },
   mutations: {
-    setToken (state, token: string) {
-      state.token = token;
-    },
-    setUser (state, user: User) {
+    setUser(state, user) {
       state.user = user;
+      state.role = user.role; 
+      localStorage.setItem('username', user.username);
+      localStorage.setItem('role', user.role);
     },
-    createToken (state, token: string) {
+    setToken(state, token) {
+      state.token = token;
       localStorage.setItem('token', token);
-    }
+    },
+    clearAuth(state) {
+      state.user = null;
+      state.token = null;
+      state.role = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+    },
   },
   actions: {
+    login({ commit }, token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        commit('setToken', token);
+        commit('setUser', decodedToken);
+      } catch (error) {
+        console.error('Invalid token', error);
+        commit('clearAuth');
+      }
+    },
+    logout({ commit }) {
+      commit('clearAuth');
+    },
+    checkAuth({ commit, state }) {
+      if (state.token) {
+        const decodedToken = JSON.parse(atob(state.token.split('.')[1]));
+        const isExpired = decodedToken.exp && decodedToken.exp <= Math.floor(Date.now() / 1000);
+
+        if (isExpired) {
+          commit('clearAuth');
+        } else {
+          commit('setUser', decodedToken);
+        }
+      }
+    },
   },
-  modules: {
-  }
+  getters: {
+    user: (state) => state.user,
+    token: (state) => state.token,
+    isLoggedIn: (state) => !!state.token,
+    isAdmin: (state) => state.role === 'admin',
+  },
 });

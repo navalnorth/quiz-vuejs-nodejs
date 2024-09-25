@@ -1,6 +1,6 @@
 <template>
-    <div class="w-full m-8">
-        <h2 class="text-4xl m-4 flex justify-center">Création d'un nouveau Quiz</h2>
+    <div class="w-full">
+        <h2 class="text-4xl m-2 flex justify-center">Création d'un nouveau Quiz</h2>
 
         <form @submit.prevent="clique" class="flex flex-col justify-center items-center">
             <div>
@@ -13,11 +13,10 @@
             </div>
 
             <div class="flex flex-col justify-center items-center my-4">
-                <label>Vos réponses</label>
 
                 <button @click.prevent="reponsePlus"
-                    class="px-5 py-2.5 bg-green-700 text-white border-none rounded-3xl hover:bg-green-950 w-32 m-4">
-                    Ajouter
+                    class="px-5 py-2.5 bg-cyan-950 text-white border-none rounded-3xl hover:bg-cyan-700">
+                    Ajouter réponse
                 </button>
 
                 <div v-for="(reponse, index) in currentQuestion.reponses" :key="index"
@@ -59,7 +58,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Quiz } from "../types/config";
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 const erreurs = ref<string[]>([]);
 
 const monQuiz = ref<Quiz>({
@@ -154,6 +155,7 @@ const clique = async () => {
     monQuiz.value.nom_quiz = '';
     monQuiz.value.questions = [{ nom_question: '', reponses: ['', ''], reponse_correcte: 0 }];
     QuestionIndex.value = 0;
+    router.push('/profileAdmin')
 }
 
 

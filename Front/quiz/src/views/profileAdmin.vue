@@ -1,19 +1,20 @@
 <template>
-    <div>
         <div class="flex justify-center">
             <button 
                 @click="pushCreation"
-                class="px-5 py-2.5 mt-10 border-2 border-cyan-700 bg-white text-black rounded-2xl w-32">
+                class="px-4 py-2.5 mx-4 mb-10 border-2 border-cyan-700 bg-white text-black rounded-3xl">
                 Créer Quiz
+            </button>
+            <button @click="deconnexion"
+                class="px-4 py-2.5 mx-4 mb-10 border-2 border-cyan-700 bg-red-500 text-white rounded-3xl">
+                Se déonnecter
             </button>
         </div>
         &nbsp; &nbsp;
-        <div class="flex flex-wrap justify-center m-2">
+        <div class="flex flex-wrap justify-center mb-4">
             <tableQuiz v-for="(quiz, index) in quizList" :key="quiz.id_quiz" :title="quiz.nom_quiz" :id="quiz.id_quiz"
                 :active="!!quiz.isActive" @delete="deleteQuiz(index)" />
         </div>
-    </div>
-
 
 
 </template>
@@ -24,10 +25,13 @@ import { useRouter } from "vue-router";
 import tableQuiz from "../components/tableQuiz.vue"
 import type { quizlist } from "../types/config"
 import { ref, onMounted } from 'vue';
+import { useStore } from "vuex";
+
+const store = useStore()
+const router = useRouter()
 
 let quizList = ref<quizlist[]>([])
 
-const router = useRouter()
 
 
 const pushCreation = () => {
@@ -59,4 +63,8 @@ onMounted(() => {
     listQuiz()
 })
 
+const deconnexion = () => {
+    store.dispatch('logout')
+    router.push('/')
+}
 </script>

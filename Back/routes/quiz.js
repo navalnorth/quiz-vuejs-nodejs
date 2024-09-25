@@ -2,6 +2,8 @@ const mysql = require("mysql2");
 const express = require("express");
 const router = express.Router();
 
+const jwt = require('jsonwebtoken');
+
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -80,8 +82,7 @@ router.put("/updateQuiz/:id_quiz", (req, res) => {
     db.query(deleteSql, [id_quiz], (err, results) => {
       if (err) { return res.status(500).send(err) }
 
-      const questionSql =
-        "INSERT INTO question (id_quiz, nom_question, reponses, reponse_correcte) VALUES ?";
+      const questionSql = "INSERT INTO question (id_quiz, nom_question, reponses, reponse_correcte) VALUES ?";
       const questionData = questions.map((q) => [
         id_quiz,
         q.nom_question,
@@ -100,28 +101,34 @@ router.put("/updateQuiz/:id_quiz", (req, res) => {
 
 router.get("/updateQuiz/:id_quiz", async (req, res) => {
   const { id_quiz } = req.params;
+  try {
+    const sqlQuiz = "SELECT * FROM quiz WHERE id_quiz = ?";
+    const [quizResults] = await db.promise().query(sqlQuiz, [id_quiz]);
 
-  const sqlQuiz = "SELECT * FROM quiz WHERE id_quiz = ?";
-  db.query(sqlQuiz, [id_quiz], (err, quizResults) => {
-    if (err) { return res.status(500).send(err) }
-
-    if (quizResults.length === 0) { return res.status(404).json({ message: "Quiz non trouvé" }) }
+    if (quizResults.length === 0) {
+      return res.status(404).json({ message: 'Quiz non trouvé' });
+    }
 
     const quiz = quizResults[0];
 
     const sqlQuestions = "SELECT * FROM question WHERE id_quiz = ?";
-    db.query(sqlQuestions, [id_quiz], (err, questionResults) => {
-      if (err) { return res.status(500).send(err) }
+    const [questionResults] = await db.promise().query(sqlQuestions, [id_quiz]);
 
-      quiz.questions = questionResults.map((q) => ({
-        nom_question: q.nom_question,
-        reponses: JSON.parse(q.reponses),
-        reponse_correcte: q.reponse_correcte,
-      }));
-      res.status(200).json(quiz);
-    });
-  });
+    quiz.questions = questionResults.map((q) => ({
+      nom_question: q.nom_question,
+      reponses: JSON.parse(q.reponses),
+      reponse_correcte: q.reponse_correcte,
+    }));
+
+    const quizToken = jwt.sign({ quiz }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    return res.status(200).json({ quiz: quizToken });
+  } catch (err) {
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
 });
+
+
 
 
 
